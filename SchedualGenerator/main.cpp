@@ -10,5 +10,5 @@ int main()
 	schedual->printAllteachers();
 	schedual->printHoursRequirementsForAllClasses();
 	schedual->generateSchedule();
-	schedual->printSchedual();
+	schedual->printSchedule();
 }

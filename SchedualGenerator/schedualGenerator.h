@@ -40,7 +40,7 @@ public:
 	void printTeachersNames();
 	void printHoursRequierementsForClass(int classIndex);
 	void printHoursRequirementsForAllClasses();
-	void printSchedual();
+	void printSchedule();
 private:
 	void initilizeGeneralBlockedHours();
 	void initilizeTeachers();
@@ -50,7 +50,7 @@ private:
 	void deleteHourFromTeacherInRequierments(int classIndex, int teacher);
 	bool isTeacherAvailable(int teacher, int hourIdentifier);
 	bool isHourBlockedForAll(int hourIdentifier);
-	bool teacherIsTeachingInThisHour(int teacher, int day, int hour);
+	bool isTeacherTeachingInThisHour(int teacher, int day, int hour);
 	int preferredChunkOfTeacherHoursForClass(int teacher, int classIndex);
 
 
