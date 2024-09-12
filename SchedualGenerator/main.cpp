@@ -9,5 +9,6 @@ int main()
 	schedual->initilizeDeatails();
 	schedual->printAllteachers();
 	schedual->printHoursRequirementsForAllClasses();
-
+	schedual->generateSchedule();
+	schedual->printSchedual();
 }
