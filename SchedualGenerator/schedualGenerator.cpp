@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "schedualGenerator.h"
 #include "common.h"
+#include <iomanip>  // For std::setw
+#include <iostream>
+
 
 
 void SchedualGenerator::generateSchedule() {
@@ -19,15 +22,18 @@ void SchedualGenerator::generateSchedule() {
 	}
 
 	// Scheduling logic
-	for (int hour = 0; hour < hoursPerDay; hour++) {
-		for  (int day = 0; day < daysInSchedual; day++) {
+	for (int day = 0; day < daysInSchedual; day++) {
+		for  (int hour = 0; hour < hoursPerDay; hour++) {
 			for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
 				bool tryingNextTeacher = true;
 				int triedTeachers = 0;
 				int numOfTeacherOptions = classes[classIndex].size();
 
 				while (tryingNextTeacher) {
+					triedTeachers=hour*2;
+					triedTeachers++;
 					int chunkAndTeacher = nextTeacherRequierment(classIndex, triedTeachers);
+					
 					int teacher = chunkAndTeacher % 100;
 
 					if (chunkAndTeacher != -1) {
@@ -45,7 +51,9 @@ void SchedualGenerator::generateSchedule() {
 							tryingNextTeacher = false; // Successful assignment
 						}
 						else {
-							triedTeachers++;
+							schedual[hour][day][classIndex] = -1; // Mark as unscheduled
+							tryingNextTeacher = false; // Stop trying teachers
+							
 						}
 					}
 					else {
@@ -148,20 +156,75 @@ int SchedualGenerator::preferredChunkOfTeacherHoursForClass(int teacher, int cla
 }
 
 
+//todo: divide into initilize all teachers and to initilize teacher 
 void SchedualGenerator::initilizeTeachers()
 {
 	print("************ starting with teachers settings *************\n");
+	int indexOfTeacher = 0;
+	while (true)
+	{
+		print("add a teacher? y/n ");
+		char answer = yesOrNoDialog();
+		if (answer == 'n')
+		{
+			numOfTeachers = indexOfTeacher;
+			return;
+		}
+		if (answer == 'y')
+		{
+			std::string name;
+			print("what is the teacher's name? ");
+			std::cin >> name;
+			this->teachersNames.push_back(name);
+			print("this teacher has the identifier ", indexOfTeacher, "\n");
+			indexOfTeacher = indexOfTeacher + 1;
 
-	// Predefined teachers
-	this->teachersNames.push_back("lili");  // Teacher 0
-	this->teachersNames.push_back("mia");   // Teacher 1
-	this->teachersNames.push_back("nill");  // Teacher 2
-	this->teachersNames.push_back("flfl");
-	// No restrictions for any teacher
-	numOfTeachers = 3;
 
+			print("does this teacher have restrictions? y/n ");
+			char answer = yesOrNoDialog();
+			if (answer == 'n')
+			{
+				continue;
+			}
+			else {
+
+				while (true) {
+
+					print("do you want to add a restriction? y/n ");
+					char answer = yesOrNoDialog();
+					if (answer == 'n')
+					{
+						break;
+					}
+					else {
+						int day;
+						int hour;
+						std::string reason;
+						// no validate day/hour cause it will just not use if not vaild 
+						print("what day? ");
+						std::cin >> day;
+						print("what hour? ");
+						std::cin >> hour;
+						print("what reason? ");
+						std::cin >> reason;
+
+						int identifier = day * 24 + hour;
+
+						teachers[indexOfTeacher][identifier] = reason;
+					}
+
+				}
+			}
+		}
+
+
+
+	}
 	print("************ finished with teachers settings *************\n\n\n");
+	numOfTeachers = indexOfTeacher;
 }
+
+
 
 void SchedualGenerator::initilizeClasses()
 {
@@ -181,7 +244,8 @@ void SchedualGenerator::initilizeClasses()
 	classes.resize(classesIndex + 1);
 	classesNames.push_back("Class 0");	
 
-	addTeacherHoursForClass(classesIndex,6, 8, 1, 2); 
+	addTeacherHoursForClass(classesIndex,0, 8, 1, 2); 
+	addTeacherHoursForClass(classesIndex, 3, 8, 1, 2);
 	addTeacherHoursForClass(classesIndex, 5, 4, 1, 2); // Teacher 0: 4 hours, priority 1, chunks of 2 hours
 	addTeacherHoursForClass(classesIndex, 4, 2, 3, 1);  // Teacher 1: 5 hours, priority 3, chunks of 2 hours
 
@@ -190,7 +254,9 @@ void SchedualGenerator::initilizeClasses()
 	classes.resize(classesIndex + 1);
 	classesNames.push_back("Class 1");
 
-	addTeacherHoursForClass(classesIndex, 3, 2, 1, 1);  // Teacher 2: 4 hours, priority 1, chunks of 2 hours
+	addTeacherHoursForClass(classesIndex, 3, 2, 1, 1);
+	addTeacherHoursForClass(classesIndex, 3, 8, 1, 2);
+	addTeacherHoursForClass(classesIndex, 5, 4, 1, 2);// Teacher 2: 4 hours, priority 1, chunks of 2 hours
 
 	numOfClasses = 2;
 	classesPreferredChunks = classes;
@@ -337,7 +403,7 @@ void SchedualGenerator::initilizeGeneralBlockedHours() {
 				int day;
 				int hour;
 				std::string reason;
-				// no need to validate day/hour because it will just not use if not vaild 
+				// todo: add validation , for now no need to validate day/hour because it will just not use if not vaild 
 				print("what day? ");
 				std::cin >> day;
 				print("what hour? ");
@@ -346,7 +412,7 @@ void SchedualGenerator::initilizeGeneralBlockedHours() {
 				std::cin >> reason;
 
 				int identifier = day * 24 + hour;
-				this->generalBlockedHoursForEveryone[identifier] = reason;
+				generalBlockedHoursForEveryone[identifier] = reason;
 
 			}
 		}
@@ -394,23 +460,47 @@ void SchedualGenerator::printTeachersNames()
 
 }
 
-void SchedualGenerator::printSchedule(){
+//for that func, thanks for chat gpt lol
+void SchedualGenerator::printSchedule() {
+	const int columnWidth = 15;  // Define uniform width for each column
 
+	// Print the header (days)
+	std::cout << std::setw(columnWidth) << " ";  // Empty space for the hour labels
 	for (int day = 0; day < daysInSchedual; day++) {
-		print("day: ", day);
-		for (int hour = 0; hour < hoursPerDay; hour++) {
-			print(" hour:", hour);
-			for (int classIndex = 0; classIndex < numOfClasses; classIndex++)
-			{
-				int cell = schedual[hour][day][classIndex];
-				if (cell == -1) {
-					continue;
-				}
-				else { print("class: ", classIndex, " teacher:", cell % 100, "preferredChunk: ", (cell - cell % 100) / 100, "\n"); }
-
-			}
-		}
+		std::cout << std::setw(columnWidth) << "Day " + std::to_string(day);
 	}
+	std::cout << std::endl;
 
+	// Iterate over each hour of the day
+	for (int hour = 0; hour < hoursPerDay; hour++) {
+		// Print the hour label
+		std::cout << std::setw(columnWidth) << "Hour " + std::to_string(hour + 1);
 
+		// Iterate over each day
+		for (int day = 0; day < daysInSchedual; day++) {
+			std::string cellContent;
+			bool hasClass = false;
+			print(" ; ");
+			// Collect information for each class at this day and hour
+			for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
+				int cell = schedual[hour][day][classIndex];
+				if (cell != -1) {
+					hasClass = true;
+					int teacher = cell % 100;
+					int preferredChunk = (cell - cell % 100) / 100;
+
+					cellContent += " C" + std::to_string(classIndex) + " T" + std::to_string(teacher) + " P" + std::to_string(preferredChunk) + " | ";
+					
+				}
+			}
+
+			if (!hasClass) {
+				cellContent = "Free";  // If no class is scheduled
+			}
+
+			// Print the cell content with fixed width
+			std::cout << std::setw(columnWidth) << cellContent;
+		}
+		std::cout << std::endl;  // Move to the next hour row
+	}
 }
