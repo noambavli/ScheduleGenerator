@@ -2,7 +2,7 @@
 #include "schedualGenerator.h"
 #include "common.h"
 #include <iomanip>  // For std::setw
-#include <iostream>
+
 
 
 
@@ -308,7 +308,6 @@ void SchedualGenerator::addTeacherHoursForClass(int classesIndex, int teacherInd
 			classes[classesIndex].push_front(newPair);
 
 		}
-		//printHoursRequierementsForClass(classesIndex);
 
 	}
 	else {
