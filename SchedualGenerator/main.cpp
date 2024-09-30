@@ -1,14 +1,14 @@
 #include "pch.h"
-#include "schedualGenerator.h"
+#include "scheduleGenerator.h"
 
 
 int main()
 
 {
-	SchedualGenerator* schedual = new SchedualGenerator();
-	schedual->initilizeDeatails();
-	schedual->printAllteachers();
-	schedual->printHoursRequirementsForAllClasses();
-	schedual->generateSchedule();
-	schedual->printSchedule();
+	ScheduleGenerator* schedule = new ScheduleGenerator();
+	schedule->initilizeDeatails();
+	schedule->printAllteachers();
+	schedule->printHoursRequirementsForAllClasses();
+	schedule->generateSchedule();
+	schedule->printSchedule();
 }

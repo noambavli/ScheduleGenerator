@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
 
-class SchedualGenerator {
+class ScheduleGenerator {
 
 private:
 	int daysInSchedual;
@@ -32,7 +32,7 @@ private:
 	// and move restricstions but still
 
 public:
-	SchedualGenerator(){}
+	ScheduleGenerator(){}
 	void initilizeDeatails();
 	void generateSchedule();
 public:
@@ -52,10 +52,12 @@ private:
 	bool isHourBlockedForAll(int hourIdentifier);
 	bool isTeacherTeachingInThisHour(int teacher, int day, int hour);
 	int preferredChunkOfTeacherHoursForClass(int teacher, int classIndex);
-
-
-	
-	
+private:
+	void improveSchedule();
+	bool fixNotOptimizedChunk(int classIndex, int identifier, int currentChunkCount, int preferredChunk, int teacher, int nextHourTeacher, int prevHourTeacher);
+	bool replaceTeachers(int classIndex, int teacher, int nextOrPrevTeacher, std::string& direction, int currentChunkIdentifier, int currentChunkCount, int completingChunkIdentifier, int completingChunkSize);
+	int sizeOfNextChunk(int classIndex, int identifier);
+	int sizeOfPrevChunk(int classIndex, int identifier, int currentChunkCount);
 
 
 
