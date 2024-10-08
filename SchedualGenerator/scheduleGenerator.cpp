@@ -113,7 +113,6 @@ bool ScheduleGenerator::fixNotOptimizedChunk(int classIndex,int currentChunkIden
 }
 
 
-bool 
 
 
 bool ScheduleGenerator::replaceTeachers(int classIndex ,int teacher, int nextOrPrevTeacher, std::string& direction, int currentChunkIdentifier, int currentChunkCount, int completingChunkIdentifier, int completingChunkSize) {
