@@ -11,4 +11,9 @@ int main()
 	schedule->printHoursRequirementsForAllClasses();
 	schedule->generateSchedule();
 	schedule->printSchedule();
+	schedule->improveSchedule();
+	schedule->printSchedule();
+	schedule->printUnscheduledHours();
+	schedule->printUnscheduledHoursDueTeachersBlockedTimes();
+
 }

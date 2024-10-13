@@ -10,7 +10,7 @@ private:
 	int numOfClasses;
 private:
 
-	int*** schedual;
+	int*** schedule;
 	
 private:
 	//names for the classes&teachers cause we only reffer to them as index in our program for efficiency
@@ -23,6 +23,7 @@ private:
 	 the unique identifier is day*24+hour */
 	std::unordered_map<int,std::unordered_map<int, std::string>> teachers;
 	std::vector < std::list<std::pair<int, int>>> classesPreferredChunks;
+	std::vector <std::pair<int, int>> classesBlockedTimes;
 
 	
 private:
@@ -35,12 +36,16 @@ public:
 	ScheduleGenerator(){}
 	void initilizeDeatails();
 	void generateSchedule();
+	void improveSchedule();
 public:
 	void printAllteachers();
 	void printTeachersNames();
 	void printHoursRequierementsForClass(int classIndex);
 	void printHoursRequirementsForAllClasses();
 	void printSchedule();
+	void printUnscheduledHoursDueTeachersBlockedTimes();
+	void printUnscheduledHours();
+
 private:
 	void initilizeGeneralBlockedHours();
 	void initilizeTeachers();
@@ -50,14 +55,20 @@ private:
 	void deleteHourFromTeacherInRequierments(int classIndex, int teacher);
 	bool isTeacherAvailable(int teacher, int hourIdentifier);
 	bool isHourBlockedForAll(int hourIdentifier);
+	bool isBlockedTimeForClass(int classIndex, int hourIdentifier);
 	bool isTeacherTeachingInThisHour(int teacher, int day, int hour);
+	bool unscheduledTeacherAndClassHours(int classIndex, int teacher);
 	int preferredChunkOfTeacherHoursForClass(int teacher, int classIndex);
+
 private:
-	void improveSchedule();
-	bool fixNotOptimizedChunk(int classIndex, int identifier, int currentChunkCount, int preferredChunk, int teacher, int nextHourTeacher, int prevHourTeacher);
-	bool replaceTeachers(int classIndex, int teacher, int nextOrPrevTeacher, std::string& direction, int currentChunkIdentifier, int currentChunkCount, int completingChunkIdentifier, int completingChunkSize);
-	int sizeOfNextChunk(int classIndex, int identifier);
-	int sizeOfPrevChunk(int classIndex, int identifier, int currentChunkCount);
+	bool fixNotOptimizedChunk(int classIndex, int identifier, int currentChunkCount, int preferredChunk, int teacher,
+		int nextHourTeacher, int prevHourTeacher);
+	bool replaceTeachers(int classIndex, int teacher, int nextOrPrevTeacher, bool direction, int currentChunkIdentifier,
+		int currentChunkCount, int completingChunkIdentifier, int completingChunkSize);
+	bool findCompletingChunkAndReplace(int classIndex, int teacher, int surroundingTeacher, bool isNextDirection,
+		int currentChunkIdentifier, int completingChunkSize);
+	std::pair<int, bool> nextChunkInfo(int classIndex, int identifier);
+	std::pair<int, bool> prevChunkInfo(int classIndex, int identifier, int currentChunkCount);
 
 
 

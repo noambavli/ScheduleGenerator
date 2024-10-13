@@ -7,103 +7,157 @@
 
 
 void ScheduleGenerator::generateSchedule() {
-	schedual = new int** [hoursPerDay];
+	schedule = new int** [hoursPerDay];
 
 	// Initialize schedule array
 	for (int hour = 0; hour < hoursPerDay; hour++) {
-		schedual[hour] = new int* [daysInSchedual];
+		schedule[hour] = new int* [daysInSchedual];
 		for (int day = 0; day < daysInSchedual; day++) {
-			schedual[hour][day] = new int[numOfClasses]();
+			schedule[hour][day] = new int[numOfClasses]();
 			for (int classIndex = 0; classIndex < numOfClasses; classIndex++)
 			{
-				schedual[hour][day][classIndex] = -1;
+				schedule[hour][day][classIndex] = -1;
 			}
 		}
 	}
 
 	// Scheduling logic
+
 	for (int day = 0; day < daysInSchedual; day++) {
-		for  (int hour = 0; hour < hoursPerDay; hour++) {
+		for (int hour = 0; hour < hoursPerDay; hour++) {
 			for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
+
+
 				bool tryingNextTeacher = true;
 				int triedTeachers = 0;
 				int numOfTeacherOptions = classes[classIndex].size();
+				int chunkAndTeacher = nextTeacherRequierment(classIndex, triedTeachers);
+				int lastTeacher = chunkAndTeacher % 100;
 
 				while (tryingNextTeacher) {
-					triedTeachers=hour*2;
 					triedTeachers++;
-					int chunkAndTeacher = nextTeacherRequierment(classIndex, triedTeachers);
-					
 					int teacher = chunkAndTeacher % 100;
+
+					if (lastTeacher != teacher) {
+						lastTeacher = teacher;  // Update last teacher
+					}
 
 					if (chunkAndTeacher != -1) {
 						int hourIdentifier = day * 24 + hour;
 
 						// Check teacher availability and general blocked hours
 						if (isTeacherAvailable(teacher, hourIdentifier) &&
-							!isHourBlockedForAll(hourIdentifier) 
-							&& !isTeacherTeachingInThisHour(teacher,day ,hour)) {
-							
-							schedual[hour][day][classIndex] = chunkAndTeacher;
-							print("new schedule: ", "class:", classIndex, " day:", day, " hour", hour," teacher:", teacher, "\n");
-							
+							!isBlockedTimeForClass(classIndex, hourIdentifier) &&
+							!isHourBlockedForAll(hourIdentifier) &&
+							!isTeacherTeachingInThisHour(teacher, day, hour)) {
+
+							// Assign teacher and update schedule
+							schedule[hour][day][classIndex] = chunkAndTeacher;
+							print("new schedule: ", "class:", classIndex, " day:", day, " hour:", hour, " teacher:", teacher, "\n");
+
+							// Remove hour from teacher's requirements
 							deleteHourFromTeacherInRequierments(classIndex, teacher);
 							tryingNextTeacher = false; // Successful assignment
 						}
+						else if (triedTeachers < numOfTeacherOptions) {
+							// If the current teacher is unavailable, try the next teacher
+							chunkAndTeacher = nextTeacherRequierment(classIndex, triedTeachers);
+						}
 						else {
-							schedual[hour][day][classIndex] = -1; // Mark as unscheduled
-							tryingNextTeacher = false; // Stop trying teachers
-							
+							// If all teachers were tried and none are available
+							schedule[hour][day][classIndex] = -1; // Mark as unscheduled
+							tryingNextTeacher = false; // Stop trying
 						}
 					}
 					else {
-						schedual[hour][day][classIndex] = -1; // Mark as unscheduled
-						tryingNextTeacher = false; // Stop trying teachers
+						// If no valid teacher was found
+						schedule[hour][day][classIndex] = -1; // Mark as unscheduled
+						tryingNextTeacher = false; // Stop trying
 					}
-					
 				}
 			}
 		}
 	}
 }
 
+void ScheduleGenerator::improveSchedule() {
+	// Initialize variables
+	for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
+		for (int day = 0; day < daysInSchedual; day++) {
+			int hourIndex = 0;
 
+			while (hourIndex < hoursPerDay) {
+				int cell = schedule[hourIndex][day][classIndex];
+				if (cell == -1) {
+					hourIndex++;
+					continue; // Skip unscheduled hours
+				}
 
-
-
-
-bool ScheduleGenerator::fixNotOptimizedChunk(int classIndex,int currentChunkIdentifier, int currentChunkCount, int preferredChunk, int teacher, int nextHourTeacher, int prevHourTeacher) {
-	bool result = false;
-
-	
-	auto processChunk = [&](bool isNextChunk) {
-		int chunkSize = isNextChunk ? sizeOfNextChunk(classIndex, currentChunkIdentifier) : sizeOfPrevChunk(classIndex, currentChunkIdentifier,currentChunkCount);
-		int completingChunkSize = preferredChunk - currentChunkCount;
-		int completingChunkIdentifier = -1;
-
-		// Check chunk validity
-		if (chunkSize > preferredChunk || (isNextChunk ? !isNextTeacherChunkIsPreferredChunk() : !isPrevTeacherChunkIsPreferredChunk()) || completingChunkSize != chunkSize) {
-			return false;
-		}
-
-		int triedChunks = 0;
-		while ((completingChunkIdentifier = (isNextChunk ? nextChunkOfteacher(teacher, size, triedChunks) : prevChunkOfteacher(teacher, size, triedChunks))) != -1) {
-			if (completingChunkIdentifier != -1) {
+				int teacher = cell % 100;
+				int preferredChunk = (cell - cell % 100) / 100;
+				int currentChunkCount = 0;
+				int nextHourTeacher = teacher;
 				
-				std::string direction = isNextChunk ? "next" : "prev";
-				int nextOrPrevTeacher = isNextChunk ? nextHourTeacher : prevHourTeacher;
-				result = replaceTeachers( classIndex,teacher, nextOrPrevTeacher, direction, currentChunkIdentifier, completingChunkIdentifier, completingChunkSize);
 
-				if (result) {
-					return true;  // Successfully replaced teachers
+				// Count consecutive hours for the same teacher
+				while (teacher == nextHourTeacher) {
+					int identifier = day * 24 + hourIndex;
+					if (hourIndex + 1 < hoursPerDay) {
+						nextHourTeacher = schedule[hourIndex + 1][day][classIndex] % 100;
+					}
+					else {
+						nextHourTeacher = -1; // End of sequence
+					}
+
+					currentChunkCount++;
+
+					// Check for chunk optimization
+					if (nextHourTeacher != teacher && currentChunkCount % preferredChunk != 0) {
+						int prevHourTeacher = (hourIndex - currentChunkCount >= 0) ? schedule[hourIndex - currentChunkCount][day][classIndex] % 100 : -1;
+						bool isPatched = fixNotOptimizedChunk(classIndex, identifier, currentChunkCount, preferredChunk, teacher, nextHourTeacher, prevHourTeacher);
+
+						if (isPatched) {
+							print("\nPatched bad: ", "day: ", day, " hour: ", hourIndex, " class: ", classIndex);
+						}
+						else {
+							print("\nDidn't patch bad: ", "day: ", day, " hour: ", hourIndex, " class: ", classIndex);
+						}
+					}
+
+					hourIndex++;
 				}
 			}
-			triedChunks++;
 		}
-		return false;  
+	}
+}
+
+bool ScheduleGenerator::fixNotOptimizedChunk(int classIndex, int currentChunkIdentifier, int currentChunkCount,
+	int preferredChunk, int teacher, int nextHourTeacher, int prevHourTeacher) {
+	bool result = false;
+
+	auto processChunk = [&](bool isNextChunk) {
+		std::pair<int, bool> surroundingChunkInfo = isNextChunk
+			? nextChunkInfo(classIndex, currentChunkIdentifier)
+			: prevChunkInfo(classIndex, currentChunkIdentifier, currentChunkCount);
+
+		int completingChunkSize = preferredChunk - currentChunkCount;
+
+		// Check if chunk can and needs to be fixed
+		if (surroundingChunkInfo.first <= preferredChunk &&
+			surroundingChunkInfo.second && 
+			completingChunkSize == surroundingChunkInfo.first) {
+			int surroundingTeacher = isNextChunk ? nextHourTeacher : prevHourTeacher;
+
+			// Only attempt to replace if the surrounding teacher is different
+			if (surroundingTeacher != teacher) {
+				result = findCompletingChunkAndReplace(classIndex, teacher, surroundingTeacher, isNextChunk, currentChunkIdentifier, completingChunkSize);
+				return true; // Return true if chunk was processed successfully
+			}
+		}
+
+		return false; // Return false if chunk was not processed
 		};
 
-	// Process next chunk
 	if (processChunk(true)) {
 		return true;  // Early return if next chunk was successful
 	}
@@ -113,23 +167,64 @@ bool ScheduleGenerator::fixNotOptimizedChunk(int classIndex,int currentChunkIden
 }
 
 
+bool ScheduleGenerator::findCompletingChunkAndReplace(int classIndex, int teacher, int surroundingTeacher, bool isNextDirection,
+	int currentChunkIdentifier, int completingChunkSize) {
+	bool result = false;
+	for (int day = 0; day < daysInSchedual; ++day) {
+		int targetTeacherChunkSize = 0;
+		for (int hour = 0; hour < hoursPerDay; ++hour) {
 
 
-bool ScheduleGenerator::replaceTeachers(int classIndex ,int teacher, int nextOrPrevTeacher, std::string& direction, int currentChunkIdentifier, int currentChunkCount, int completingChunkIdentifier, int completingChunkSize) {
-	int currentChunkHour = currentChunkIdentifier % 10;
-	int currentChunkDay = (currentChunkIdentifier - currentChunkHour) / 24;
+			int cell = schedule[hour][day][classIndex];
+			if (cell == -1) {
+				continue;
+			}
+			int currentTeacher = cell % 100;
+			if (currentTeacher == teacher){
+				targetTeacherChunkSize++;
+			} else {
+				targetTeacherChunkSize = 0;
+			}
+			if (targetTeacherChunkSize == completingChunkSize)
+			{
+				result = replaceTeachers(classIndex, teacher, surroundingTeacher, isNextDirection, currentChunkIdentifier,
+					targetTeacherChunkSize, cell, completingChunkSize);
+				if (result) {
+					return true;
+				}
 
-	int completingChunkHour = completingChunkIdentifier % 10;
-	int completingChunkDay = (completingChunkIdentifier - currentChunkHour) / 24;
+			}
+
+
+		}
+	}
+	return false;
+	
+
+
+
+
+
+}
+
+
+
+bool ScheduleGenerator::replaceTeachers(int classIndex ,int teacher, int nextOrPrevTeacher, bool next,
+	int currentChunkIdentifier, int currentChunkCount, int completingChunkIdentifier, int completingChunkSize) {
+	int currentChunkHour = currentChunkIdentifier % 24;
+	int currentChunkDay = currentChunkIdentifier / 24;
+
+	int completingChunkHour = completingChunkIdentifier % 24;
+	int completingChunkDay = completingChunkIdentifier  / 24;
 
 	int targetChunkFirstHour;
 
-	if (direction == "next")
+	if (next)
 	{
 		targetChunkFirstHour = currentChunkHour + 1;
 	}
 
-	if (direction == "prev")
+	if (!next) //prev
 	{
 		targetChunkFirstHour = currentChunkHour - currentChunkCount + 1 - completingChunkSize + 1;
 	}
@@ -153,141 +248,108 @@ bool ScheduleGenerator::replaceTeachers(int classIndex ,int teacher, int nextOrP
 	//replace
 
 
-	for (int hourIndex = targetChunkFirstHour; hourIndex < completingChunkSize; hourIndex++) {
+	for (int hourIndex = targetChunkFirstHour-1; hourIndex < completingChunkSize; hourIndex++) {
 
-		int cell = schedual[hourIndex][currentChunkDay][classIndex];
-		schedual[hourIndex][currentChunkDay][classIndex] = (cell - cell % 100) + teacher;
+		//int cell = schedual[hourIndex][currentChunkDay][classIndex];
+		schedule[hourIndex][currentChunkDay][classIndex] =  completingChunkSize * 100 + nextOrPrevTeacher;
 	}
 
 	for (int hourIndex = completingChunkHour; hourIndex < completingChunkSize; hourIndex++) {
 
-		int cell = schedual[hourIndex][completingChunkDay][classIndex];
-		schedual[hourIndex][completingChunkDay][classIndex] = (cell - cell % 100) + nextOrPrevTeacher;
+		schedule[hourIndex][completingChunkDay][classIndex] = (currentChunkCount+completingChunkSize) * 100 + teacher;
 	}
-
+	
 
 
 	return true;
 	
 }
 
-
-int ScheduleGenerator::sizeOfNextChunk(int classIndex ,int identifier) {
+std::pair<int, bool> ScheduleGenerator::nextChunkInfo(int classIndex ,int identifier) {
 
 	int chunkSizeCounter = 0;
-	int hour = identifier % 10;
-	int day = (identifier - identifier) / 24;
+	int hour = identifier % 24;
+	int day = identifier / 24;
 	int hourIndex = hour+1;
-	if (hourIndex >= hoursPerDay || schedual[hourIndex][day][classIndex] == -1) {
-		return 0;
+
+	if (hourIndex >= hoursPerDay)
+	{
+		return std::make_pair(chunkSizeCounter, false);
+
 	}
-	int teacher = schedual[hourIndex][day][classIndex] % 100;
+
+	int cell = schedule[hourIndex][day][classIndex];
+	int teacher = cell % 100;
+	int preferredChunk = (cell - cell % 100) / 100;
+
+	if (hourIndex > hoursPerDay || cell == -1) {
+		return std::make_pair(0, false);
+	}
+
 	int nextTeacher = teacher;
-	while (schedual[hourIndex][day][classIndex] != -1 && teacher == nextTeacher)
+	while (cell != -1 && teacher == nextTeacher && hourIndex < hoursPerDay-1)
 	{
 		hourIndex++;
 		chunkSizeCounter++;
-		if (schedual[hourIndex][day][classIndex] != -1)
+		if (schedule[hourIndex][day][classIndex] != -1  )
 		{
-			nextTeacher = schedual[hourIndex][day][classIndex] % 100;
+			nextTeacher = schedule[hourIndex][day][classIndex] % 100;
 		}
 		
 
 	}
-	return chunkSizeCounter;
+
+	bool isChunkSizePreferredChunk = (chunkSizeCounter == preferredChunk);
+	return std::make_pair(chunkSizeCounter, isChunkSizePreferredChunk);;
 
 }
-int ScheduleGenerator::sizeOfPrevChunk(int classIndex, int identifier, int currentChunkCount) {
+
+std::pair<int, bool> ScheduleGenerator::prevChunkInfo(int classIndex, int identifier, int currentChunkCount) {
 
 	int chunkSizeCounter = 0;
-	int hour = identifier % 10;
-	int day = (identifier - identifier) / 24;
+	int hour = identifier % 24;
+	int day = identifier/ 24;
 	int hourIndex = hour + 1 - currentChunkCount;
-	int teacher = schedual[hourIndex-1][day][classIndex] % 100;
-	int prevTeacher = teacher;
-	while (schedual[hourIndex][day][classIndex] != -1 && teacher == prevTeacher)
-
-	
-	
 	
 
-	if (hourIndex <= 0 || schedual[hourIndex-1][day][classIndex] == -1) {
-		return 0;
-	}
-	
-	while (schedual[hourIndex][day][classIndex] != -1 && teacher == prevTeacher && hourIndex >= 0)
+	if (hourIndex <= 0)
 	{
-		hourIndex--;
-		chunkSizeCounter++;
-		if (schedual[hourIndex][day][classIndex] != -1 && hourIndex >= 0)
+		return std::make_pair(chunkSizeCounter, false);
+
+	}
+	int cell = schedule[hourIndex - 1][day][classIndex];
+	int teacher = cell % 100;
+	int preferredChunk = (cell - cell % 100) / 100;
+
+	int prevTeacher = teacher;
+
+	if (hourIndex > 0 || cell == -1) {
 		{
-			prevTeacher = schedual[hourIndex][day][classIndex] % 100;
-		}
+			return std::make_pair(0, false);
 
 
-	}
-	return chunkSizeCounter;
-
-
-
-
-
-}
-
-
-
-void ScheduleGenerator::improveSchedule() {
-	// fix horrible coding
-	int nextHourTeacher = -1;
-	int recentTeacher = -1;
-	int teacher = -1;
-	int chunkHours = -1;
-	int preferredChunk = -1;
-	for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
-		for (int day = 0; day < daysInSchedual; day++) {
-			int hourIndex = 0;
-
-			while (hourIndex < hoursPerDay)
+			while (schedule[hourIndex][day][classIndex] != -1 && teacher == prevTeacher && hourIndex >= 0)
 			{
-				int currentChunkCount = 0;
-				int cell = schedual[hourIndex][day][classIndex];
-				if (cell == 1)
+				hourIndex--;
+				chunkSizeCounter++;
+				if (schedule[hourIndex][day][classIndex] != -1 && hourIndex >= 0)
 				{
-					continue;
+					prevTeacher = schedule[hourIndex][day][classIndex] % 100;
 				}
-				int teacher = cell % 100;
-				int preferredChunk = (cell - cell % 100) / 100;
-				int nextHourTeacher = teacher;
 
-				while (teacher == nextHourTeacher) 
-				{
-					if (hourIndex + 1 < hoursPerDay) // if it's not the last hour
-					{
-						nextHourTeacher = schedual[hourIndex + 1][day][classIndex] % 100;
-					}
-					else {
-						nextHourTeacher = -1; //then nextHourTeacher != teacher is true for the next check
 
-					}
-					
-					currentChunkCount++;
-					
-					if (nextHourTeacher != teacher && currentChunkCount % preferredChunk != 0)
-					{
-
-						int identifier = day * 24 + hourIndex;
-						int prevHourTeacher =  schedual[hourIndex - currentChunkCount][day][classIndex] % 100;
-						bool isPatched = fixNotOptimizedChunk(classIndex,identifier,currentChunkCount,preferredChunk, teacher, nextHourTeacher, prevHourTeacher);
-						if (isPatched) { print("patched bad: ", "day: ", day, "hour: ", hourIndex, "class: ", classIndex); }
-						else { print("didn't patched bad: ", "day: ", day, "hour: ", hourIndex, "class: ", classIndex); }
-					}
-					
-				hourIndex++;
-				}
 			}
+
+			bool isChunkSizePreferredChunk = (chunkSizeCounter == preferredChunk);
+			return std::make_pair(chunkSizeCounter, isChunkSizePreferredChunk);;
 		}
+
 	}
+
 }
+
+
+
 
 bool ScheduleGenerator::isTeacherTeachingInThisHour(int teacher, int day,int hour)
 {
@@ -295,7 +357,7 @@ bool ScheduleGenerator::isTeacherTeachingInThisHour(int teacher, int day,int hou
 	{
 		try
 		{
-			if (schedual[hour][day][classIndex] == teacher)
+			if (schedule[hour][day][classIndex] % 100 == teacher)
 			{
 				return true;
 			}
@@ -310,12 +372,27 @@ bool ScheduleGenerator::isTeacherTeachingInThisHour(int teacher, int day,int hou
 	return false;
 
 }
+
 bool ScheduleGenerator::isTeacherAvailable(int teacher, int hourIdentifier) {
 	return teachers[teacher].empty() || teachers[teacher].find(hourIdentifier) == teachers[teacher].end();
 }
+
 bool ScheduleGenerator::isHourBlockedForAll(int hourIdentifier) {
 	return generalBlockedHoursForEveryone.find(hourIdentifier) != generalBlockedHoursForEveryone.end();
 }
+
+bool ScheduleGenerator::isBlockedTimeForClass(int classIndex, int hourIdentifier)
+{
+	auto it = std::find_if(classesBlockedTimes.begin(), classesBlockedTimes.end(),
+		[hourIdentifier,classIndex](const std::pair<int, int>& p) {
+			return p.second == hourIdentifier && p.first == classIndex;
+		});
+
+	return it != classesBlockedTimes.end(); // Returns true if found, false otherwise
+
+}
+
+
 
 void ScheduleGenerator::deleteHourFromTeacherInRequierments(int classIndex, int teacher) {
 	for (auto& pair : classes[classIndex]) {
@@ -329,13 +406,11 @@ void ScheduleGenerator::deleteHourFromTeacherInRequierments(int classIndex, int 
 int ScheduleGenerator::nextTeacherRequierment(int classIndex, int triedTeachers) {
 	int triedAndBlocked = 0;
 
-	
-
-
 	for (const auto& pair : classes[classIndex]) {
 		if (triedAndBlocked >= triedTeachers && pair.second > 0) {
 			// Return the teacher and chunk combination
-			return preferredChunkOfTeacherHoursForClass(pair.first, classIndex) * 100 + pair.first;
+	
+		return preferredChunkOfTeacherHoursForClass(pair.first, classIndex) * 100 + pair.first;
 		}
 		triedAndBlocked++;
 
@@ -343,6 +418,7 @@ int ScheduleGenerator::nextTeacherRequierment(int classIndex, int triedTeachers)
 
 	return -1; // No more teachers available
 }
+
 int ScheduleGenerator::preferredChunkOfTeacherHoursForClass(int teacher, int classIndex) {
 
 	for (const auto& pair : classesPreferredChunks[classIndex])
@@ -355,6 +431,8 @@ int ScheduleGenerator::preferredChunkOfTeacherHoursForClass(int teacher, int cla
 	return -1;
 	
 }
+
+
 
 
 void ScheduleGenerator::initilizeDeatails() {
@@ -372,6 +450,7 @@ void ScheduleGenerator::initilizeDeatails() {
 	initilizeClasses();
 
 }
+
 void ScheduleGenerator::initilizeGeneralBlockedHours() {
 
 	char answer;
@@ -411,9 +490,14 @@ void ScheduleGenerator::initilizeGeneralBlockedHours() {
 	}
 
 }
-//todo: divide into initilize all teachers and to initilize teacher 
+
 void ScheduleGenerator::initilizeTeachers()
 {
+
+	// *** This is the UI for inserting teachers. While developing, use the predefined data (in initilizeClasses func ). 
+// For production, just comment out the predefined data and uncomment this section. ***
+
+	/*
 	print("************ starting with teachers settings *************\n");
 	int indexOfTeacher = 0;
 	while (true)
@@ -464,7 +548,7 @@ void ScheduleGenerator::initilizeTeachers()
 						std::cin >> reason;
 
 						int identifier = day * 24 + hour;
-
+						
 						teachers[indexOfTeacher][identifier] = reason;
 					}
 
@@ -477,46 +561,163 @@ void ScheduleGenerator::initilizeTeachers()
 	}
 	print("************ finished with teachers settings *************\n\n\n");
 	numOfTeachers = indexOfTeacher;
+	*/
 }
+
 void ScheduleGenerator::initilizeClasses()
 {
-	print("\n\n\n************ started with classes settings *************\n");
-	print("for every class, for every teacher the class will learn with,\n");
-	print("you now want to provide the teacher number, how many hours in every \n ");
-	print("schedule (generally week), the priority of the teacher (subject) \n");
-	print("and the preferred chunks of hours (1-hour lessons, 2-hours lessons, 4-hours lessons, etc)\n");
-	print("here are the teachers numbers and names: \n");
-	print("_________________________________\n");
-	printTeachersNames();
-	print("_________________________________\n");
+	// *** This is the UI for inserting teachers. While developing, use the predefined data (below). 
+	// For production, just comment out the predefined data and uncomment this section. ***
+	
+	int classIndex = 0;
+	/*
+		print("\n\n\n************ started with classes settings *************\n");
+		print("for every class, for every teacher the class will learn with,\n");
+		print("you now want to provide the teacher number, how many hours in every \n ");
+		print("schdual(gerenally week), the priority of the teacher (subject) \n");
+		print("and the preferred chunks of hours (1-hour lessons,2-hours lessons,4-hours lessons etc)\n");
+		print("schedule (generally week), the priority of the teacher (subject) \n");
+		print("and the preferred chunks of hours (1-hour lessons, 2-hours lessons, 4-hours lessons, etc)\n");
+		print("here are the teachers numbers and names: \n");
+		print("_________________________________\n");
+		printTeachersNames();
+		print("_________________________________\n");
+		// Predefined classes and teacher assignments
+		// Class 0
+		
+		
+		while (true) {
 
-	// Predefined classes and teacher assignments
-	// Class 0
-	int classesIndex = 0;
-	classes.resize(classesIndex + 1);
-	classesNames.push_back("Class 0");	
+			print("do you want to add a class? y/n ");
+			char answer = yesOrNoDialog();
+			if (answer == 'n')
+			{
+				return;
+			}
+			else {
 
-	addTeacherHoursForClass(classesIndex,0, 8, 1, 2); 
-	addTeacherHoursForClass(classesIndex, 3, 8, 1, 2);
-	addTeacherHoursForClass(classesIndex, 5, 4, 1, 2); // Teacher 0: 4 hours, priority 1, chunks of 2 hours
-	addTeacherHoursForClass(classesIndex, 4, 2, 3, 1);  // Teacher 1: 5 hours, priority 3, chunks of 2 hours
+				while (true) {
 
-	// Class 1
-	classesIndex++;
-	classes.resize(classesIndex + 1);
-	classesNames.push_back("Class 1");
+					print("do you want to add a blocked times? y/n ");
+					char answer = yesOrNoDialog();
+					if (answer == 'n')
+					{
+						break;
+					}
+					else {
+						int day;
+						int hour;
+						// no validate day/hour cause it will just not use if not in the schedule
+						print("what day? ");
+						std::cin >> day;
+						print("what hour? ");
+						std::cin >> hour;
 
-	addTeacherHoursForClass(classesIndex, 3, 2, 1, 1);
-	addTeacherHoursForClass(classesIndex, 3, 8, 1, 2);
-	addTeacherHoursForClass(classesIndex, 5, 4, 1, 2);// Teacher 2: 4 hours, priority 1, chunks of 2 hours
+						int identifier = day * 24 + hour;
 
-	numOfClasses = 2;
-	classesPreferredChunks = classes;
+						classesBlockedTimes.push_back(std::make_pair(classIndex, identifier));
+					}
 
-	print("************ finished with classes settings *************\n\n\n");
-}
+				
+				classes.resize(classIndex + 1);
+				std::string name = name;
+				print("whats the name of the class? ");
+				std::cin >> name;
+				print("the identifier od the class is: ", classIndex, "\n");
+				classesNames.push_back(name);
+				while (true) {
+					print("add a subject/teacher hours?");
+					answer = yesOrNoDialog();
+					if (answer == 'n')
+					{
+						break;
+						classes.resize(classIndex + 1);
+						classesNames.push_back("Class 0");
+
+					}
+					else {
+						// todo: valiation
+						int teacherIndex = 0;
+						int hoursNum = 0;
+						int priority = 0;
+						int chunks = 0;
+						print("teacher number? ");
+						std::cin >> teacherIndex;
+						print("how many hours? ");
+						std::cin >> hoursNum;
+						print("priority? low-1 regular-2 high-3 ");
+						std::cin >> priority;
+						print("preferred chunks? ");
+						std::cin >> chunks;
+						addTeacherHoursForClass(classIndex, teacherIndex, hoursNum, priority, chunks);
+					}
+
+				}
+				classIndex++;
+				this->numOfClasses = classIndex;
+
+			}
+
+		
+		*/
+			
+	
+			// Class 0
+
+			teachers[0][1] = "reason"; // teacher 0 unavailable in day 0 hour 1
+			classesBlockedTimes.push_back(std::make_pair(0, 0)); // class 0 unavailable in day 0 hour 0
+		
+			classes.resize(classIndex + 1);
+			classesNames.push_back("Class 0");
+
+			addTeacherHoursForClass(classIndex, 0, 2, 3, 2); // Teacher, hours, priority, chunks size
+			addTeacherHoursForClass(classIndex, 0, 3, 1, 1);
+
+			
 
 
+			
+	
+			classIndex++;
+
+			classes.resize(classIndex + 1);
+			classesNames.push_back("Class 1");
+
+			addTeacherHoursForClass(classIndex, 5, 8, 1, 2);
+			addTeacherHoursForClass(classIndex, 4, 2, 3, 1);
+
+			addTeacherHoursForClass(classIndex, 3, 3, 3, 1);
+			addTeacherHoursForClass(classIndex, 3, 4, 3, 1);
+			addTeacherHoursForClass(classIndex, 32, 4, 3, 2);
+			addTeacherHoursForClass(classIndex, 8, 4, 3, 3);
+
+
+			classes.resize(classIndex + 1);
+			classesNames.push_back("Class 2");
+
+
+			addTeacherHoursForClass(classIndex, 5, 1, 1, 1); // Teacher, hours, priority, chunks size
+			addTeacherHoursForClass(classIndex, 4, 1, 3, 1);
+			addTeacherHoursForClass(classIndex, 7, 3, 3, 2);
+			addTeacherHoursForClass(classIndex, 12, 4, 3, 2);
+			addTeacherHoursForClass(classIndex, 6, 4, 3, 3);
+
+
+
+			classIndex++;
+
+
+
+			numOfClasses = 2;
+			classesPreferredChunks = classes;
+			
+			classesPreferredChunks = classes;
+			print("************ finished with classes settings *************\n\n\n");
+		
+		}
+		
+
+	
 void ScheduleGenerator::addTeacherHoursForClass(int classesIndex, int teacherIndex, int hoursNum, int priority, int chunksSize)
 {
 
@@ -542,7 +743,7 @@ void ScheduleGenerator::addTeacherHoursForClass(int classesIndex, int teacherInd
 			classes[classesIndex].push_back(newPair);
 			if (needUnfilled) { classes[classesIndex].push_back(newPairUnfilled); }
 		}
-
+	
 		if (priority == 2)
 		{	//push to the middle
 
@@ -607,15 +808,21 @@ void ScheduleGenerator::addTeacherHoursForClass(int classesIndex, int teacherInd
 
 
 
+
 void ScheduleGenerator::printHoursRequierementsForClass(int classIndex) {
 
 	for (const auto& hour : classes[classIndex]) {
 
-		print("teacher: ", hour.first, " hours: ", hour.second, "\n");
+		if (hour.second != 0)
+		{
+			print("teacher: ", hour.first, " hours: ", hour.second, "\n");
+			
+		}
 
 	}
 
 }
+
 void ScheduleGenerator::printHoursRequirementsForAllClasses()
 {
 	print("============ all classes ============\n");
@@ -628,6 +835,12 @@ void ScheduleGenerator::printHoursRequirementsForAllClasses()
 	}
 
 }
+
+
+
+
+
+
 void ScheduleGenerator::printAllteachers()
 
 {
@@ -642,7 +855,7 @@ void ScheduleGenerator::printAllteachers()
 			for (const auto& blockedTime : teachers[i])
 			{
 
-				print("day:", ((blockedTime.first - blockedTime.first % 10) / 24), " hour:", blockedTime.first % 24, " reason:", blockedTime.second, "\n");
+				print("day:", (blockedTime.first / 24, " hour:", blockedTime.first % 24, " reason:", blockedTime.second, "\n"));
 
 			}
 		}
@@ -658,6 +871,7 @@ void ScheduleGenerator::printAllteachers()
 
 
 }
+
 void ScheduleGenerator::printTeachersNames()
 {
 	for (int i = 0; i < numOfTeachers; i++)
@@ -667,36 +881,31 @@ void ScheduleGenerator::printTeachersNames()
 
 }
 
-//for most of that func, thanks for chat gpt lol
 void ScheduleGenerator::printSchedule() {
-	const int columnWidth = 15;  // Define uniform width for each column
+	const int columnWidth = 15;  
 
-	// Print the header (days)
 	std::cout << std::setw(columnWidth) << " ";  // Empty space for the hour labels
 	for (int day = 0; day < daysInSchedual; day++) {
 		std::cout << std::setw(columnWidth) << "Day " + std::to_string(day);
 	}
 	std::cout << std::endl;
 
-	// Iterate over each hour of the day
 	for (int hour = 0; hour < hoursPerDay; hour++) {
-		// Print the hour label
-		std::cout << std::setw(columnWidth) << "Hour " + std::to_string(hour + 1);
 
-		// Iterate over each day
+		std::cout << std::setw(columnWidth) << "Hour " + std::to_string(hour);
+
 		for (int day = 0; day < daysInSchedual; day++) {
 			std::string cellContent;
 			bool hasClass = false;
-			print(" ; ");
-			// Collect information for each class at this day and hour
+			print("; ");
 			for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
-				int cell = schedual[hour][day][classIndex];
+				int cell = schedule[hour][day][classIndex];
 				if (cell != -1) {
 					hasClass = true;
 					int teacher = cell % 100;
 					int preferredChunk = (cell - cell % 100) / 100;
 
-					cellContent += " C" + std::to_string(classIndex) + " T" + std::to_string(teacher) + " P" + std::to_string(preferredChunk) + " | ";
+					cellContent += " C" + std::to_string(classIndex) + " T" + std::to_string(teacher) + " P" + std::to_string(preferredChunk) + "|";
 					
 				}
 			}
@@ -705,9 +914,70 @@ void ScheduleGenerator::printSchedule() {
 				cellContent = "Free";  // If no class is scheduled
 			}
 
-			// Print the cell content with fixed width
+		
 			std::cout << std::setw(columnWidth) << cellContent;
 		}
-		std::cout << std::endl;  // Move to the next hour row
+		std::cout << std::endl;  
 	}
 }
+
+
+void ScheduleGenerator::printUnscheduledHoursDueTeachersBlockedTimes() {
+
+	print("\n------------------------------------------------------------------------\n");
+
+	bool unscheduledHoursExist = false;
+	for (int teacher = 0; teacher < teachers.size(); ++teacher)
+	{
+		if (!teachers[teacher].empty()) {
+			//print("identifier: ", i, " name: ", teachersNames[i]);
+			//print(" blocked times: ");
+			for (const auto& blockedTime : teachers[teacher])
+			{
+				for (int classIndex = 0; classIndex <= numOfClasses; classIndex++)
+				{
+					if (schedule[blockedTime.first % 24][blockedTime.first / 24][classIndex] == -1 && unscheduledTeacherAndClassHours(classIndex, teacher))
+					{
+						unscheduledHoursExist = true;
+						print("\nday:", blockedTime.first / 24, " hour:", blockedTime.first % 24, " class: ", classIndex, " is unscheduled with teacher probably due to teacher:", teacher,
+							" limitation: ", blockedTime.second);
+					}
+				}
+				}
+			}
+
+		}
+	print("\n------------------------------------------------------------------------\n");
+
+	if (!unscheduledHoursExist)
+	{
+		print("All unscheduled hours are not related to any of the teachers' limitations.\n");
+	}
+
+
+}
+
+void ScheduleGenerator::printUnscheduledHours() {
+
+	print("\nThese are all the teacher-class hours that have not been scheduled:\n");
+
+	for (int classIndex = 0; classIndex < numOfClasses; classIndex++)
+	{
+		printHoursRequierementsForClass(classIndex);
+
+	}
+}
+
+bool ScheduleGenerator::unscheduledTeacherAndClassHours(int classIndex, int teacher) {
+
+	for (const auto& classTeacher : classes[classIndex])
+	{
+		if (classTeacher.first == teacher)
+		{
+			return true;
+		}
+
+	}
+	return false;
+}
+
