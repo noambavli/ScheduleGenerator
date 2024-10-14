@@ -22,23 +22,23 @@ It supports simultaneous scheduling for multiple classes, with a capacity for up
 Key features include:
 <br>
 <br>
-**Teacher prioritization**: Teacher prioritization for each teacher, for each class- For instance, in a sports class,you can prioritizes scheduling the sports teacher’s hours first.
+**Teacher prioritization**<br> Teacher prioritization for each teacher, for each class- For instance, in a sports class,you can prioritizes scheduling the sports teacher’s hours first.
 (you can choose 1 - low/2 - mid/ 3- high level )
 <br>
 <br>
-**Block size prioritization** :the generator prioritizes the chunks you choose for
+**Block size prioritization** the generator prioritizes the chunks you choose for
 each teacher, for each class- For example, if a math teacher for class x prefers four-hour blocks,the generator prioritizes that preference.
 <br>
 <br>
-**Logical optimizer** for incomplete chunks: A logical optimizer for fixing incomplete chunks. For example, if a teacher is scheduled
+**Logical optimizer** for incomplete chunks<br> A logical optimizer for fixing incomplete chunks. For example, if a teacher is scheduled
 for a chunk and it's interrupted by a blocked hour for that specific teacher, resulting in a replacement by another teacher,
 the optimizer can resolve this by replacing the hours between surrounding teachers and finding suitable hours within the whole schedule for the replacements.
 <br>
 <br>
-**Customizable block times**: You can set specific block times for individual classes or teachers, or apply them universally across all classes and teachers.
+**Customizable block times**<br> You can set specific block times for individual classes or teachers, or apply them universally across all classes and teachers.
 <br>
 <br>
-Acknowledging the user if a certain teacher's blocked time results in nothing being scheduled during that time, even though it is very rare,
++ Acknowledging the user if a certain teacher's blocked time results in nothing being scheduled during that time, even though it is very rare,
 along with the reason provided by the teacher when filling out the blocked times.
 <br>
 <br>
