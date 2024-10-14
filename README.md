@@ -13,7 +13,7 @@ by noam bavli
 <br>
 <br>
 This is a cool, smart schedule generator, specifically designed for schools and universities. 
-The user provides teacher-class pairs, the number of days, and the number of hours (and ofc you can specify block times), and more preferences.
+The user provides teacher-class pairs, number of days (of the "week"), and the number of hours for each day (and ofc you can specify block times), and more preferences.
 the generator creates an smart schedule.
 <br>
 <br>
