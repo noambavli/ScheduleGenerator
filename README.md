@@ -1,6 +1,6 @@
 
-schedule generator<br>
-by noam bavli
+Schedule Generator<br>
+by Noam Bavli
 <br>
 **Before anyone asks, I know about "using namespace std", but I prefer not to use it because in large-scale projects (not like this, 
   real ones, i just do it all the time cause i think its good practice) 
