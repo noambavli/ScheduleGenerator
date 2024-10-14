@@ -38,7 +38,7 @@ the optimizer can resolve this by replacing the hours between surrounding teache
 **Customizable block times**<br> You can set specific block times for individual classes or teachers, or apply them universally across all classes and teachers.
 <br>
 <br>
-+ Acknowledging the user if a certain teacher's blocked time results in nothing being scheduled during that time, even though it is very rare,
+++Acknowledging the user if a certain teacher's blocked time results in nothing being scheduled during that time, even though it is very rare,
 along with the reason provided by the teacher when filling out the blocked times.
 <br>
 <br>
