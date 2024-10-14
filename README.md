@@ -2,10 +2,13 @@
 schedule generator
 by noam bavli
 
-Before anyone asks, I know about "using namespace std", but I prefer not to use it because in large-scale projects (not like this, real ones) 
-that require a lot of libraries,I’d rather know if a function comes from the standard library or another source. This helps avoid conflicts with namespaces.
-Of course, I don’t mind using it, but I think it’s better to be explicit and not rely on using namespace std
-
+**Before anyone asks, I know about "using namespace std", but I prefer not to use it because in large-scale projects (not like this, 
+  real ones, i just do it all the time cause i think its good practice) 
+  that require a lot of libraries,I’d rather know if a function comes from the standard library or another source. This helps avoid 
+  conflicts with namespaces.
+  Of course, I don’t mind using it, but I think it’s better to be explicit and not rely on using namespace std
+**i have used the template print func even tho less efficient cause i think its pretty and the ui is basically for testing and in real 
+  server-clinet environment i'ts not gonna print anything anyway. 
 
 This is a samrt and cool schedule generator, specifically designed for schools and universities. 
 The user provides teacher-class pairs, the number of days, and the number of hours (and ofc you can specify block times), and more preferences.
@@ -27,7 +30,7 @@ the optimizer can resolve this by replacing the hours between surrounding teache
 
 Customizable block times: You can set specific block times for individual classes or teachers, or apply them universally across all classes and teachers.
 
-Note: The UI is currently subpar and needs major improvements. More testing and user input validation are required.
+Note: The UI is currently horrible. More testing and user input validation are required.
 The primary goal of this project is to implement all the algorithms and develop a system that processes data and generates accurate schedules.
 During development, I used predefined data within the code. When you're ready to use the UI, simply comment out the predefined data 
 section and uncomment the UI portion.
