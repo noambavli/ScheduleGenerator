@@ -38,6 +38,10 @@ the optimizer can resolve this by replacing the hours between surrounding teache
 Customizable block times: You can set specific block times for individual classes or teachers, or apply them universally across all classes and teachers.
 <br>
 <br>
+Acknowledging the user if a certain teacher's blocked time results in nothing being scheduled during that time, even though it is very rare,
+along with the reason provided by the teacher when filling out the blocked times.
+<br>
+<br>
 Note: The UI is currently horrible. More testing and user input validation are required.
 The primary goal of this project is to implement all the algorithms and develop a system that processes data and generates accurate schedules.
 During development, I used predefined data within the code. When you're ready to use the UI, simply comment out the predefined data 
