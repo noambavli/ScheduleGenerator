@@ -12,7 +12,7 @@ by noam bavli
   server-clinet environment i'ts not gonna print anything anyway. 
 <br>
 <br>
-This is a samrt and cool schedule generator, specifically designed for schools and universities. 
+This is a cool, smart schedule generator, specifically designed for schools and universities. 
 The user provides teacher-class pairs, the number of days, and the number of hours (and ofc you can specify block times), and more preferences.
 the generator creates an smart schedule.
 <br>
