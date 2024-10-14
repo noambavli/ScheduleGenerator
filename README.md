@@ -56,5 +56,5 @@ The 3D array stores three-digit numbers: the hundreds digit represents the teach
 Day-hour identifiers are stored as day*24 + hour, using basic mathematical operations for extremely fast data extraction, compression, and comparison.
 The patterns for storing and extracting values are simple and do not compromise reliability.
 <br>
-**I don’t know why I thought until the last commits that “schedule” was spelled “shcedual.” I fixed it in the last commits in the files and now in the repo and folder name.
+**I don’t know why I thought until the last commits that “schedule” was spelled “schedual.” I fixed it in the last commits in the files and now in the repo and folder name.
 
