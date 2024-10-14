@@ -26,11 +26,11 @@ Key features include:
 (you can choose 1 - low/2 - mid/ 3- high level )
 <br>
 <br>
-**Block size prioritization** the generator prioritizes the chunks you choose for
+**Block size prioritization**<br> the generator prioritizes the chunks you choose for
 each teacher, for each class- For example, if a math teacher for class x prefers four-hour blocks,the generator prioritizes that preference.
 <br>
 <br>
-**Logical optimizer** for incomplete chunks<br> A logical optimizer for fixing incomplete chunks. For example, if a teacher is scheduled
+**Logical optimizer**<br> for incomplete chunks A logical optimizer for fixing incomplete chunks. For example, if a teacher is scheduled
 for a chunk and it's interrupted by a blocked hour for that specific teacher, resulting in a replacement by another teacher,
 the optimizer can resolve this by replacing the hours between surrounding teachers and finding suitable hours within the whole schedule for the replacements.
 <br>
