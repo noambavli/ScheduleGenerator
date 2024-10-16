@@ -50,15 +50,17 @@ private:
 	void initilizeGeneralBlockedHours();
 	void initilizeTeachers();
 	void initilizeClasses();
+	bool scheduleTeacherClassHours(int day, int hour, int classIndex, int teacher, int preferredChunk , int chunkAndTeacher);
 	void addTeacherHoursForClass(int classesIndex, int teacherIndex, int hoursNum, int priority, int chunks);
 	int nextTeacherRequierment(int classIndex, int triedTeachers);
-	void deleteHourFromTeacherInRequierments(int classIndex, int teacher);
+	void deleteHourFromTeacherInRequierments(int classIndex, int teacher, int chunkSize, bool checkChunkSize);
 	bool isTeacherAvailable(int teacher, int hourIdentifier);
 	bool isHourBlockedForAll(int hourIdentifier);
 	bool isBlockedTimeForClass(int classIndex, int hourIdentifier);
 	bool isTeacherTeachingInThisHour(int teacher, int day, int hour);
 	bool unscheduledTeacherAndClassHours(int classIndex, int teacher);
 	int preferredChunkOfTeacherHoursForClass(int teacher, int classIndex);
+
 
 private:
 	bool fixNotOptimizedChunk(int classIndex, int identifier, int currentChunkCount, int preferredChunk, int teacher,
