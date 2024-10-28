@@ -83,7 +83,7 @@ void ScheduleGenerator::generateSchedule() {
 
 
 
-// Scheduling logic #2
+// Scheduling logic #2 
 
 /*
 
