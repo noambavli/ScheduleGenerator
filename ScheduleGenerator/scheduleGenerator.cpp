@@ -7,16 +7,16 @@
 
 
 void ScheduleGenerator::generateSchedule() {
+	// Allocate a 3D array to store the schedule for each hour of each day for each class
 	schedule = new int** [hoursPerDay];
 
-	// Initialize schedule array
+	// Initialize the schedule array
 	for (int hour = 0; hour < hoursPerDay; hour++) {
 		schedule[hour] = new int* [daysInSchedual];
 		for (int day = 0; day < daysInSchedual; day++) {
 			schedule[hour][day] = new int[numOfClasses]();
-			for (int classIndex = 0; classIndex < numOfClasses; classIndex++)
-			{
-				schedule[hour][day][classIndex] = -1;
+			for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
+				schedule[hour][day][classIndex] = -1; // Mark classes as unscheduled
 			}
 		}
 	}
@@ -25,49 +25,43 @@ void ScheduleGenerator::generateSchedule() {
 	int day = 0, hour = 0, classIndex = 0, triedTeachers = 0, hourCount = 0;
 
 	// Scheduling logic #1
-
-
-	/*
-
-
 	for (int day = 0; day < daysInSchedual; day++) {
 		for (int hour = 0; hour < hoursPerDay; hour++) {
 			for (int classIndex = 0; classIndex < numOfClasses; classIndex++) {
 
-
 				bool tryingNextTeacher = true;
-				int triedTeachers = 0;
-				int numOfTeacherOptions = classes[classIndex].size();
-				int chunkAndTeacher = nextTeacherRequierment(classIndex, triedTeachers);
-				int lastTeacher = chunkAndTeacher % 100;
+				int triedTeachers = 0; // Track attempts to find a teacher
+				int numOfTeacherOptions = classes[classIndex].size(); // Number of available teachers for the class
+				int chunkAndTeacher = nextTeacherRequierment(classIndex, triedTeachers); // Get the next teacher requirement
+				int lastTeacher = chunkAndTeacher % 100; // Extract the last teacher ID
 
 				while (tryingNextTeacher) {
 					triedTeachers++;
-					int teacher = chunkAndTeacher % 100;
+					int teacher = chunkAndTeacher % 100; // Get current teacher ID
 
 					if (lastTeacher != teacher) {
-						lastTeacher = teacher;  // Update last teacher
+						lastTeacher = teacher;  // Update last teacher if it's different
 					}
 
-					if (chunkAndTeacher != -1) {
-						int hourIdentifier = day * 24 + hour;
+					if (chunkAndTeacher != -1) { // If a valid teacher requirement exists
+						int hourIdentifier = day * 24 + hour; // Unique identifier for the current time slot
 
-						// Check teacher availability and general blocked hours
+						// Check teacher availability and if the time is blocked
 						if (isTeacherAvailable(teacher, hourIdentifier) &&
 							!isBlockedTimeForClass(classIndex, hourIdentifier) &&
 							!isHourBlockedForAll(hourIdentifier) &&
 							!isTeacherTeachingInThisHour(teacher, day, hour)) {
 
-							// Assign teacher and update schedule
+							// Assign teacher to the class in the schedule
 							schedule[hour][day][classIndex] = chunkAndTeacher;
 							print("new schedule: ", "class:", classIndex, " day:", day, " hour:", hour, " teacher:", teacher, "\n");
 
-							// Remove hour from teacher's requirements
+							// Remove this hour from the teacher's requirements
 							deleteHourFromTeacherInRequierments(classIndex, teacher, 0, false);
 							tryingNextTeacher = false; // Successful assignment
 						}
 						else if (triedTeachers < numOfTeacherOptions) {
-							// If the current teacher is unavailable, try the next teacher
+							// Try the next teacher if the current one is unavailable
 							chunkAndTeacher = nextTeacherRequierment(classIndex, triedTeachers);
 						}
 						else {
@@ -77,8 +71,8 @@ void ScheduleGenerator::generateSchedule() {
 						}
 					}
 					else {
-						// If no valid teacher was found
-						schedule[hour][day][classIndex] = -1; // Mark as unscheduled
+						// No valid teacher found, mark as unscheduled
+						schedule[hour][day][classIndex] = -1;
 						tryingNextTeacher = false; // Stop trying
 					}
 				}
@@ -86,11 +80,12 @@ void ScheduleGenerator::generateSchedule() {
 		}
 	}
 }
-*/
+
 
 
 // Scheduling logic #2
 
+/*
 
 	while (true) {
 		if (numOfClasses == 0) {
@@ -158,6 +153,7 @@ void ScheduleGenerator::generateSchedule() {
 		}
 	}
 }
+*/
 
 bool ScheduleGenerator::scheduleTeacherClassHours(int day, int hour, int classIndex, int teacher, int preferredChunk, int chunkAndTeacher)
 {
@@ -217,7 +213,6 @@ void ScheduleGenerator::improveSchedule() {
 
 					currentChunkCount++;
 
-					// Check for chunk optimization
 					if (nextHourTeacher != teacher && currentChunkCount % preferredChunk != 0) {
 						int prevHourTeacher = (hourIndex - currentChunkCount >= 0) ? schedule[hourIndex - currentChunkCount][day][classIndex] % 100 : -1;
 						bool isPatched = fixNotOptimizedChunk(classIndex, identifier, currentChunkCount, preferredChunk, teacher, nextHourTeacher, prevHourTeacher);
@@ -780,8 +775,9 @@ void ScheduleGenerator::initilizeClasses()
 		
 		*/
 			
-	
-			// Class 0
+
+		// ***While developing, use the predefined data (in initilizeClasses func ). 
+	// For production, just comment out the predefined data and uncomment the UI section. ***
 
 			//teachers[0][1] = "reason"; // teacher 0 unavailable in day 0 hour 1
 			//classesBlockedTimes.push_back(std::make_pair(0, 0)); // class 0 unavailable in day 0 hour 0
@@ -793,8 +789,6 @@ void ScheduleGenerator::initilizeClasses()
 			addTeacherHoursForClass(classIndex, 5, 1, 1, 1); // Teacher, hours, priority, chunks size
 
 			
-
-
 			
 	
 			classIndex++;
