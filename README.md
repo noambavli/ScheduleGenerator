@@ -14,13 +14,13 @@
 **Schedule Generator**<br>
 by Noam Bavli
 <br>
-**Before anyone asks, I know about "using namespace std", but I prefer not to use it because in large-scale projects (not like this, 
-  real ones, i just do it all the time cause i think its good practice) 
+Before anyone asks,
+## I know about "using namespace std", but I prefer not to use it because in large-scale projects (not like this, real ones, i just do it all the time cause i think its good practice) 
   that require a lot of libraries,I’d rather know if a function comes from the standard library or another source. This helps avoid 
   conflicts with namespaces.
   Of course, I don’t mind using it, but I think it’s better to be explicit and not rely on using namespace std
   <br>
-**i have used the template print func even tho less efficient cause i think its pretty and the ui is basically for testing and in real 
+## i have used the template print func even tho less efficient cause i think its pretty and the ui is basically for testing and in real 
   server-clinet environment i'ts not gonna print anything anyway. 
 <br>
 <br>
