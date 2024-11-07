@@ -4,7 +4,7 @@
 ## ואז זה פשוט ממלא , עם הימנעות מסטארווינג של כיתות מסויימות, והעדיפות העליונה היא שקודם ישובצו המורים שהוגדרו חשובים גם אם הבלוק נקטע (הקבלות, מורה לא עובד בשעות האלו וכו) ולבסוף יש מתקן לוגי שמאתר אפשרויות לשעות מתאימות להחלפה בין מורים במקומות שנקטעו כדי להגיע לתוצאה אופטימלית יותר 
 ### ** הוספתי עוד אופציה שנייה לאלגוריתם שסתם הוספתי בסוף שעובדת שונה, מחפשת מורה אחר ישר לא צריכה ממש את המתקן הלוגי אבל הרבה פחות עונה על העדפות היא רק צריכה עוד טיפה תיקונים וטסטים אבל פחות רלוונטי , לבסוף זה גם עושה בדיקה קטנה על שעות שלא שובצו האם זה בגלל מורה מסויים וכולי ומראה את הסיבה למה (הסיבה - string סופקה כשההגבלות הוזנו )
 ### הקטע שזה בתוך מערך תלת מימדי זה לא כדי שזה יהיה מגניב אלא שיהיה מהיר לבדוק האם מורים/כיתות עסוקים בשעות מסויימות. המערך מורכב משעה-יום-כיתה כך שבכל תא יש מספר תלת ספרתי של יחידות ועשרות- מספר מורה, מאות- כמות שעות מועדפת (נגיד שיעורים של שלוש שעות כל פעם) , כך שמציאת המידע הרלוונטי כל פעם מתבצעת מאוד מהר + מעט ממש זיכרון. 
-מקום לשיפור- דוקומנטציה , בגלל שזה היה פרוייקט לכיף העיקר שתצא תוצאה שתתאים לבית ספר (אגב גם הui מזעזע) וכולי פחות השקעתי בהאם אנשים יבינו את הקוד יותר לממש משהו שיביא פתרון בלי מאמץ
+מקום לשיפור- דוקומנטציה , בגלל שזה היה פרוייקט לכיף העיקר שתצא תוצאה שתתאים לבית ספר (אגב גם הui מזעזע) וכולי פחות השקעתי בהאם אנשים יבינו את הקוד יותר לממש משהו שיביא פתרון למערכת בלי מאמץ מחשבתי וסידור של המשתמש
 ביי יום טוב
 
 
@@ -21,11 +21,11 @@ Before anyone asks,
   Of course, I don’t mind using it, but I think it’s better to be explicit and not rely on using namespace std
   <br>
 #### i have used the template print func even tho less efficient cause i think its pretty and the ui is basically for testing and in real 
-  server-clinet environment i'ts not gonna print anything anyway. 
+  server-clinet environment i'ts not gonna print anything anyway (the server, just gonna send the data to the client and the client print and visualize). 
 <br>
 <br>
 This is a cool, smart schedule generator, specifically designed for schools and universities. 
-The user provides teacher-class pairs, number of days (of the "week"), and the number of hours for each day (and ofc you can specify block times), and more preferences.
+The user provides teacher-class pairs, number of days (of the "week"), and the number of hours for each day (and ofc you can specify blocked times), and more preferences.
 the generator creates an smart schedule.
 <br>
 <br>
