@@ -30,6 +30,7 @@ Before anyone asks,
   server-clinet environment i'ts not gonna print anything anyway (the server, just gonna send the data to the client and the client print and visualize). 
 <br>
 <br>
+-------------------------------------------------------------
 This is a cool, smart schedule generator, specifically designed for schools and universities. 
 The user provides teacher-class pairs, number of days (of the "week"), and the number of hours for each day (and ofc you can specify blocked times), and more preferences.
 the generator creates an smart schedule.
