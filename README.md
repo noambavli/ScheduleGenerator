@@ -20,8 +20,9 @@
 **Schedule Generator**<br>
 by Noam Bavli
 <br>
-Before anyone asks:
-#### I know about "using namespace std", but I prefer not to use it because in large-scale projects (not like this, real ones, i just do it all the time cause i think its good practice) 
+## notes about some wried things in the code:
+### I know about "using namespace std",
+but I prefer not to use it because in large-scale projects (not like this, real ones, i just do it all the time cause i think its good practice) 
   that require a lot of libraries,I’d rather know if a function comes from the standard library or another source. This helps avoid 
   conflicts with namespaces.
   Of course, I don’t mind using it, but I think it’s better to be explicit and not rely on using namespace std
@@ -32,6 +33,7 @@ i have used the template print func even tho less efficient cause i think its pr
 <br>
 
 ******************************************************************************************
+## goal
 This is a cool, smart schedule generator, specifically designed for schools and universities. 
 The user provides teacher-class pairs, number of days (of the "week"), and the number of hours for each day (and ofc you can specify blocked times), and more preferences.
 the generator creates an smart schedule.
