@@ -2,7 +2,7 @@
 **Schedule Generator**<br>
 by Noam Bavli
 <br>
-###### notes about some weird things in the code: <br><br>I know about "using namespace std",but I prefer not to use it because in large-scale projects (not like this, real ones, i just do it all the time cause i think its good practice)  that require a lot of libraries,I’d rather know if a function comes from the standard library or another source. This helps avoid conflicts with namespaces. Of course, I don’t mind using it, but I think it’s better to be explicit and not rely on using namespace std <br> i have used the template print func even tho less efficient cause i think its pretty and the ui is basically for testing and in real   server-clinet environment i'ts not gonna print anything anyway (the server, just gonna send the data to the client and the client print and visualize). 
+###### notes about some weird things in the code: <br><br>I know about "using namespace std",but I prefer not to use it because in large-scale projects (not like this, real ones, i just do it all the time cause i think its good practice)  that require a lot of libraries,I’d rather know if a function comes from the standard library or another source. This helps avoid conflicts with namespaces. Ofc I don’t mind using it I just think it’s better to be explicit and not rely on using namespace std <br> another thing is that i have used the template print func even tho less efficient cause i think its pretty and the ui is basically for testing and in real   server-clinet environment i'ts not gonna print anything anyway (the server, just gonna send the data to the client and the client print and visualize). 
 <br>
 <br>
 
